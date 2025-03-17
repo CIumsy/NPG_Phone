@@ -27,11 +27,9 @@
       let prevSampleCounter = null;
       let samplesReceived = 0;
 
-      function triggerVolumeUp() {
-        log("Triggering Volume Up!");
-        const audio = new Audio();
-        audio.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQcAAAAA";
-        audio.play().catch(error => log("Audio play error: " + error));
+      function triggerBackButton() {
+        log("Triggering Back Button!");
+        history.back();
       }
 
       function processSample(dataView) {
@@ -48,7 +46,7 @@
         samplesReceived++;
 
         if (ch1 > 2000) {
-          triggerVolumeUp();
+          triggerBackButton();
         }
       }
 
