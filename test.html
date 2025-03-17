@@ -39,10 +39,6 @@
       background-color: #57606f;
       cursor: not-allowed;
     }
-    /* Remove the sample rate log for a cleaner look */
-    pre {
-      display: none;
-    }
     /* Canvas styling */
     canvas {
       width: 100%;
@@ -85,6 +81,11 @@
 
     let prevSampleCounter = null;
     let samplesReceived = 0;
+
+    // Threshold for triggering phone actions
+    const THRESHOLD = 0.5; // Trigger action when CH1 exceeds ±0.5
+    let lastActionTime = 0; // Debounce timer
+    const DEBOUNCE_TIME = 1000; // 1 second debounce
 
     // Setup canvas for plotting
     const canvas = document.getElementById("plotCanvas");
@@ -140,6 +141,19 @@
       if (dataCh2.length > 100) dataCh2.shift();
     }
 
+    // Perform an action on the phone (e.g., scroll, alert, etc.)
+    function performPhoneAction() {
+      const currentTime = Date.now();
+      if (currentTime - lastActionTime < DEBOUNCE_TIME) {
+        return; // Debounce to avoid repeated actions
+      }
+      lastActionTime = currentTime;
+
+      // Example: Scroll the page
+      window.scrollBy(0, 100); // Scroll down by 100 pixels
+      console.log("Phone action triggered: Scrolled down");
+    }
+
     // Process a single BLE sample
     function processSample(dataView) {
       if (dataView.byteLength !== SINGLE_SAMPLE_LEN) return;
@@ -163,6 +177,11 @@
       const normCh2 = normalizeSample(Math.max(0, Math.min(4095, rawCh2)));
       updateData(normCh0, normCh1, normCh2);
       samplesReceived++;
+
+      // Check if CH1 exceeds the threshold
+      if (Math.abs(normCh1) > THRESHOLD) {
+        performPhoneAction(); // Trigger phone action
+      }
     }
 
     // Handle notifications from BLE
