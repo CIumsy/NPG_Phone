@@ -141,7 +141,8 @@
       if (dataCh2.length > 100) dataCh2.shift();
     }
 
-    // Perform an action on the phone (e.g., scroll, alert, etc.)
+    // Perform an action on the phone by simulating a swipe down gesture.
+    // The synthetic touch events below attempt to mimic a user swipe.
     function performPhoneAction() {
       const currentTime = Date.now();
       if (currentTime - lastActionTime < DEBOUNCE_TIME) {
@@ -149,9 +150,73 @@
       }
       lastActionTime = currentTime;
 
-      // Example: Scroll the page
-      window.scrollBy(0, 100); // Scroll down by 100 pixels
-      console.log("Phone action triggered: Scrolled down");
+      const startX = window.innerWidth / 2;
+      const startY = 50;      // Starting Y position near the top
+      const endY = startY + 150; // Swipe down by 150 pixels
+      const touchIdentifier = Date.now();
+
+      // Create and dispatch a touchstart event
+      const touchStart = new Touch({
+        identifier: touchIdentifier,
+        target: document.body,
+        clientX: startX,
+        clientY: startY,
+        pageX: startX,
+        pageY: startY,
+        screenX: startX,
+        screenY: startY,
+        radiusX: 10,
+        radiusY: 10,
+        rotationAngle: 0,
+        force: 1,
+      });
+      const touchStartEvent = new TouchEvent('touchstart', {
+        cancelable: true,
+        bubbles: true,
+        touches: [touchStart],
+        targetTouches: [touchStart],
+        changedTouches: [touchStart]
+      });
+      document.body.dispatchEvent(touchStartEvent);
+
+      // After a short delay, dispatch a touchmove event to simulate the swipe motion
+      setTimeout(() => {
+        const touchMove = new Touch({
+          identifier: touchIdentifier,
+          target: document.body,
+          clientX: startX,
+          clientY: endY,
+          pageX: startX,
+          pageY: endY,
+          screenX: startX,
+          screenY: endY,
+          radiusX: 10,
+          radiusY: 10,
+          rotationAngle: 0,
+          force: 1,
+        });
+        const touchMoveEvent = new TouchEvent('touchmove', {
+          cancelable: true,
+          bubbles: true,
+          touches: [touchMove],
+          targetTouches: [touchMove],
+          changedTouches: [touchMove]
+        });
+        document.body.dispatchEvent(touchMoveEvent);
+
+        // Finally, dispatch a touchend event to complete the swipe gesture
+        setTimeout(() => {
+          const touchEndEvent = new TouchEvent('touchend', {
+            cancelable: true,
+            bubbles: true,
+            touches: [],
+            targetTouches: [],
+            changedTouches: [touchMove]
+          });
+          document.body.dispatchEvent(touchEndEvent);
+          console.log("Phone action triggered: Swipe down simulated");
+        }, 100);
+      }, 100);
     }
 
     // Process a single BLE sample
@@ -178,9 +243,9 @@
       updateData(normCh0, normCh1, normCh2);
       samplesReceived++;
 
-      // Check if CH1 exceeds the threshold
+      // Check if CH1 exceeds the threshold and trigger the swipe down action if so
       if (Math.abs(normCh1) > THRESHOLD) {
-        performPhoneAction(); // Trigger phone action
+        performPhoneAction(); // Trigger phone action (swipe down)
       }
     }
 
